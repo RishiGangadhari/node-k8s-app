@@ -6,7 +6,7 @@ function createApp() {
 
   // Root route
   app.get('/', (req, res) => {
-    const sum = add(2, 5);
+    const sum = add(2, 3);
     res.send(`<html><body><h1 id="result">Sum is: ${sum}</h1></body></html>`);
   });
 
