@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = "rishigangadhari/my-k8s-app"
+    }
+
     stages {
 
         stage('Checkout from GitHub') {
@@ -16,23 +20,35 @@ pipeline {
             }
         }
 
-       stage('Test selinium') {
+        stage('Test Selenium') {
             steps {
                 sh 'npm test'
             }
         }
+
         stage('Build Docker Image') {
             steps {
                 sh '''
                 docker build -t my-k8s-app:${BUILD_NUMBER} .
-                docker tag my-k8s-app:${BUILD_NUMBER} rishigangadhari/my-k8s-app:latest
+                docker tag my-k8s-app:${BUILD_NUMBER} $IMAGE_NAME:${BUILD_NUMBER}
+                docker tag my-k8s-app:${BUILD_NUMBER} $IMAGE_NAME:latest
                 '''
+            }
+        }
+
+        // 🔥 IMPORTANT: Docker Login
+        stage('Docker Login') {
+            steps {
+                sh docker login
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                sh 'docker push rishigangadhari/my-k8s-app:latest'
+                sh '''
+                docker push $IMAGE_NAME:${BUILD_NUMBER}
+                docker push $IMAGE_NAME:latest
+                '''
             }
         }
 
@@ -50,13 +66,12 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 sh '''
-                # Load latest image into Minikube
-                minikube image load rishigangadhari/my-k8s-app:latest
+                minikube image load $IMAGE_NAME:latest
 
-                # Apply manifests
                 minikube kubectl -- apply -f k8s/deployment.yaml
                 minikube kubectl -- apply -f k8s/service.yaml
-                minikube service my-k8s-app-service
+
+                minikube kubectl -- get pods
                 '''
             }
         }
