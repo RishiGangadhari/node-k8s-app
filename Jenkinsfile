@@ -7,8 +7,8 @@ pipeline {
 
     stages {
 
-        // 🔹 OPTIONAL: You can remove this (Jenkins already checks out code)
-        stage('Checkout from GitHub') {
+        // ✅ You can remove this (Jenkins already checks out code automatically)
+        stage('Checkout') {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/RishiGangadhari/node-k8s-app.git'
@@ -37,13 +37,13 @@ pipeline {
             }
         }
 
-        // ✅ 🔥 FIXED LOGIN STAGE (IMPORTANT CHANGE)
+        // ✅ 🔥 FIXED DOCKER LOGIN (NO ERRORS)
         stage('Docker Login') {
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'f5ea1605-c191-40c0-8554-b70e61ac8a42',   // ✅ YOUR ID
-                    usernameVariable: 'rishigangadhari',
-                    passwordVariable: 'dckr_pat_qf2vCCm70JZU-Mijykvi8LwrGT0'
+                    credentialsId: 'f5ea1605-c191-40c0-8554-b70e61ac8a42', // your ID
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
                 )]) {
                     sh '''
                     echo "$PASS" | docker login -u "$USER" --password-stdin
@@ -65,7 +65,7 @@ pipeline {
             steps {
                 sh '''
                 if ! minikube status | grep -q "apiserver: Running"; then
-                    echo "Minikube is not running. Starting now..."
+                    echo "Minikube is not running. Starting..."
                     minikube start --driver=docker --memory=2048 --cpus=2
                 fi
                 '''
