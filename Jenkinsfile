@@ -39,7 +39,13 @@ pipeline {
         // 🔥 IMPORTANT: Docker Login
         stage('Docker Login') {
             steps {
-                sh docker login
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker-cred',
+                    usernameVariable: 'rishigangadhari',
+                    passwordVariable: 'dckr_pat_qf2vCCm70JZU-Mijykvi8LwrGT0'
+                )]) {
+                    sh 'echo $PASS | docker login -u $USER --password-stdin'
+                }
             }
         }
 
